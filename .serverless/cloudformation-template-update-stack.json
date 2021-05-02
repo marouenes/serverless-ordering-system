@@ -77,6 +77,12 @@
         "LogGroupName": "/aws/lambda/ordering-system-dev-createOrder"
       }
     },
+    "OrderFulfillementLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/ordering-system-dev-orderFulfillement"
+      }
+    },
     "IamRoleLambdaExecution": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -161,7 +167,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/ordering-system/dev/1619987151907-2021-05-02T20:25:51.907Z/ordering-system.zip"
+          "S3Key": "serverless/ordering-system/dev/1619991923966-2021-05-02T21:45:23.966Z/ordering-system.zip"
         },
         "Handler": "handler.createOrder",
         "Runtime": "nodejs12.x",
@@ -185,14 +191,186 @@
         "CreateOrderLogGroup"
       ]
     },
-    "CreateOrderLambdaVersionsNOnbVDSSp8jm3oekpwCO7Una8Zgba9VAAnIwiPYU": {
+    "OrderFulfillementLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/ordering-system/dev/1619991923966-2021-05-02T21:45:23.966Z/ordering-system.zip"
+        },
+        "Handler": "handler.orderFulfillement",
+        "Runtime": "nodejs12.x",
+        "FunctionName": "ordering-system-dev-orderFulfillement",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "orderTableName": "ordersTable",
+            "orderStreamName": "order-events"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "OrderFulfillementLogGroup"
+      ]
+    },
+    "CreateOrderLambdaVersion47kbRxkGISMIxsXYPm7xbCyPu4olht2T8m1dFm83I": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "CreateOrderLambdaFunction"
         },
-        "CodeSha256": "Yd7DSC+GG1zXFXWV4nLNUqdUy+lQrBuoq0hJJSbELAA="
+        "CodeSha256": "UDoJgiCYgSsKd7JKO3Zc8zVlTUdpPn7n7mj9s4a6Dw8="
+      }
+    },
+    "OrderFulfillementLambdaVersionl4BO2YLMyOVBpjq1z4dC00cFYO3mX3kFqCBVxNSpg": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "OrderFulfillementLambdaFunction"
+        },
+        "CodeSha256": "UDoJgiCYgSsKd7JKO3Zc8zVlTUdpPn7n7mj9s4a6Dw8="
+      }
+    },
+    "ApiGatewayRestApi": {
+      "Type": "AWS::ApiGateway::RestApi",
+      "Properties": {
+        "Name": "dev-ordering-system",
+        "EndpointConfiguration": {
+          "Types": [
+            "EDGE"
+          ]
+        },
+        "Policy": ""
+      }
+    },
+    "ApiGatewayResourceOrder": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "ApiGatewayRestApi",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "order",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceOrderFulfill": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceOrder"
+        },
+        "PathPart": "fulfill",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodOrderFulfillPost": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceOrderFulfill"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "OrderFulfillementLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      }
+    },
+    "ApiGatewayDeployment1619991904057": {
+      "Type": "AWS::ApiGateway::Deployment",
+      "Properties": {
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "StageName": "dev"
+      },
+      "DependsOn": [
+        "ApiGatewayMethodOrderFulfillPost"
+      ]
+    },
+    "OrderFulfillementLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "OrderFulfillementLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
       }
     },
     "HttpApi": {
@@ -329,10 +507,45 @@
     "CreateOrderLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "CreateOrderLambdaVersionsNOnbVDSSp8jm3oekpwCO7Una8Zgba9VAAnIwiPYU"
+        "Ref": "CreateOrderLambdaVersion47kbRxkGISMIxsXYPm7xbCyPu4olht2T8m1dFm83I"
       },
       "Export": {
         "Name": "sls-ordering-system-dev-CreateOrderLambdaFunctionQualifiedArn"
+      }
+    },
+    "OrderFulfillementLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "OrderFulfillementLambdaVersionl4BO2YLMyOVBpjq1z4dC00cFYO3mX3kFqCBVxNSpg"
+      },
+      "Export": {
+        "Name": "sls-ordering-system-dev-OrderFulfillementLambdaFunctionQualifiedArn"
+      }
+    },
+    "ServiceEndpoint": {
+      "Description": "URL of the service endpoint",
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "https://",
+            {
+              "Ref": "ApiGatewayRestApi"
+            },
+            ".execute-api.",
+            {
+              "Ref": "AWS::Region"
+            },
+            ".",
+            {
+              "Ref": "AWS::URLSuffix"
+            },
+            "/dev"
+          ]
+        ]
+      },
+      "Export": {
+        "Name": "sls-ordering-system-dev-ServiceEndpoint"
       }
     },
     "HttpApiId": {

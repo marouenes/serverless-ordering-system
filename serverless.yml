@@ -80,7 +80,16 @@ functions:
           method: post
     environment:
       orderTableName: ordersTable
-      orderStreamName: order-events      
+      orderStreamName: order-events
+  orderFulfillement:
+    handler: handler.orderFulfillement
+    events:
+      - http:
+          path: /order/fulfill
+          method: post          
+    environment:
+      orderTableName: ordersTable
+      orderStreamName: order-events
 
 #      - httpApi:
 #          path: /users/create
