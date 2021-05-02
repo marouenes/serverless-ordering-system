@@ -220,7 +220,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/ordering-system/dev/1619991923966-2021-05-02T21:45:23.966Z/ordering-system.zip"
+                "S3Key": "serverless/ordering-system/dev/1619993534608-2021-05-02T22:12:14.608Z/ordering-system.zip"
               },
               "Handler": "handler.createOrder",
               "Runtime": "nodejs12.x",
@@ -251,7 +251,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/ordering-system/dev/1619991923966-2021-05-02T21:45:23.966Z/ordering-system.zip"
+                "S3Key": "serverless/ordering-system/dev/1619993534608-2021-05-02T22:12:14.608Z/ordering-system.zip"
               },
               "Handler": "handler.orderFulfillement",
               "Runtime": "nodejs12.x",
@@ -377,7 +377,7 @@
               "MethodResponses": []
             }
           },
-          "ApiGatewayDeployment1619991904057": {
+          "ApiGatewayDeployment1619993524632": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -827,7 +827,7 @@
     "artifact": "/home/zix/ordering-system/.serverless/ordering-system.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/ordering-system/dev/1619991923966-2021-05-02T21:45:23.966Z",
+    "artifactDirectoryName": "serverless/ordering-system/dev/1619993534608-2021-05-02T22:12:14.608Z",
     "artifact": "ordering-system.zip"
   }
 }
