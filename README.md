@@ -10,7 +10,7 @@ This is a project aiming at using Amazon Web Services products for building Data
 
 - Designing an event-driven application
 - Integrate **AWS Lambda and Kinesis streams** and set up necessary permissions.
-- Discover how to leverage **CloudFormation, API Gateway, SES, SNS, and SQS, and more.**
+- Discover how to leverage **[CloudFormation](https://aws.amazon.com/cloudformation/), [API Gateway](https://aws.amazon.com/api-gateway/), [SES](https://aws.amazon.com/ses/), [SNS](https://aws.amazon.com/sns/), and [SQS](https://aws.amazon.com/sqs/), and [more](https://aws.amazon.com/products/).**
 
 ## Topics Covered
 
@@ -25,7 +25,6 @@ This is a project aiming at using Amazon Web Services products for building Data
 * Deploying and testing an application
 * Cleaning up an AWS environment
 
-## Skills Covered - Links
+## Futher Readings
 
-[Kinesis](https://aws.amazon.com/kinesis/) [serverless-computing](https://en.wikipedia.org/wiki/Serverless_computing)
-[AWS](https://aws.amazon.com/)
+What is [Kinesis](https://aws.amazon.com/kinesis/)? || What is [Serverless Computing](https://en.wikipedia.org/wiki/Serverless_computing)? || Check out the complete list ofd products [Amazon Web Services] has to offer (https://aws.amazon.com/)
