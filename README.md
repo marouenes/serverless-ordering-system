@@ -27,4 +27,6 @@ This is a project aiming at using Amazon Web Services products for building Data
 
 ## Futher Readings
 
-What is [Kinesis](https://aws.amazon.com/kinesis/)? || What is [Serverless Computing](https://en.wikipedia.org/wiki/Serverless_computing)? || Check out the complete list ofd products [Amazon Web Services] has to offer (https://aws.amazon.com/)
+> What is [Kinesis](https://aws.amazon.com/kinesis/)? 
+> What is [Serverless Computing](https://en.wikipedia.org/wiki/Serverless_computing)? 
+> Check out the complete list ofd products [Amazon Web Services](https://aws.amazon.com/) has to offer :octocat:. 
