@@ -1,6 +1,5 @@
 # Serverless Ordering System
 
-*Amazon Web Services for Developers*: Data-Driven Serverless Applications with Kinesis
 ![Serverless-Architecture](/images/Serverless-Architecture.png)
 ## Overview
 
