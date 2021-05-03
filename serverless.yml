@@ -33,7 +33,7 @@ provider:
           - "kinesis:PutRecord"
         Resource:
           { "Fn::Join" : ["", ["arn:aws:kinesis::streams/order-events:", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
-#         - arn:arn:aws:kinesis:#{AWS::Region}:#{AWS::AccountId}:streams/order-events
+#         - arn:aws:kinesis:#{AWS::Region}:#{AWS::AccountId}:streams/order-events
       - Effect: "Allow"
         Actiion:
           - ses:SendEmail
@@ -43,6 +43,12 @@ provider:
           StringEquals: 
             ses:FromAddress:
               - ordering-system@grr.la
+      - Effect: "Allow"
+        Action:
+          - sqs:SendMessage
+        Resource:
+          - arn:aws:sqs:#{AWS::Region}:#{AWS::AccountId}:deliveryServiceQueue
+          - arn:aws:sqs:#{AWS::Region}:#{AWS::AccountId}:customerServiceQueue
 
 functions:
   createOrder:
@@ -63,8 +69,8 @@ functions:
     environment:
       orderTableName: ordersTable
       orderStreamName: order-events
-  notifyProducer:
-    handler: handler.notfiyProducer
+  notifyExternalParties:
+    handler: handler.notifyExternalParties
     events:
       - stream:
           { "Fn::Join" : ["", ["arn:aws:kinesis::streams/order-events:", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
@@ -73,6 +79,38 @@ functions:
       region: ${self:provider.region}
       producerEmail: producer@grr.la
       orderingSystemEmail: ordering-system@grr.la
+      deliveryCompanyQueue:
+        Ref: deliveryServiceQueue
+      orderTableName: ordersTable
+  notifyDeliveryCompany:
+    handler: handler.notifyDeliveryCompany
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - deliveryServiceQueue
+              - Arn
+          batchSize: 1
+  orderDelivered:
+    handler: handler.orderDelivered
+    events:
+      - http:
+          path: /order/delivered
+          method: post
+    environment:
+      region: $(self:provider.region)
+      orderTableName: ordersTable
+      customerServiceQueue:
+        Ref: customerServiceQueue
+  notifyCustomerService:
+    handler: handler.notifyCustomerService
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - customerServiceQueue
+              - Arn
+          batchSize: 1
 
 # CLoudFormation Template code:
 resources:
@@ -93,3 +131,11 @@ resources:
           - AttributeName: "orderId"
             KeyType: "HASH"
         BillingMode: PAY_PER_REQUEST    
+    deliveryServiceQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: deliveryServiceQueue
+    customerServiceQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: customerServiceQueue

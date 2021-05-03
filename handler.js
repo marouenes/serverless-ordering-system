@@ -3,6 +3,7 @@
 const orderManager = require('./orderManager');
 const kinesisHelper = require('./kinesisHelper'); 
 const producerManager = require('./producerManager');
+const deliveryManager = require('./deliveryManager.js');
 
 function createResponse(StatusCode, message) {
   const response = {
@@ -37,18 +38,60 @@ module.exports.orderFulfillement = async (event) => {
   })
 }
 
-module.exports.notfiyProducer = async (event) => {
+module.exports.notifyExternalParties = async (event) => {
   const record = kinesisHelper.getRecords(event);
 
-  const ordersPlaced = records.filter(r => r.eventType == 'order_placed');
+  const producerPromise = getProducerPromise(records);
+  const deliveryPromise = getDeliveryPromise(records);
 
-  if (ordersPlaced <= 0) {
-   return 'There is nothing';
-  }
-
-  producerManager.handlePlacedOrders(ordersPlaced).then(() => {
+  return Promise.all([producerPromise, deliveryPromise]).then(() => {
     return 'Everything went well!'
   }).catch(error => {
     return errror;
   })
+}
+
+module.exports.notifyDeliveryCompany = async (event) => {
+  // HTTP Call
+  Console.log('Call delivery company endpoint')
+
+  return 'DONE!';
+}
+
+module.exports.orderDelivered = async (event) => {
+  const body = JSON.parse(event.body);
+  const orderId = body.orderId;
+  const deliveryCompanyId = body.deliveryCompanyId;
+  const orderReview = body.orderReview;
+
+  return deliveryManager.orderDelivered(orderId, deliveryCompanyId, orderReview).then(() => {
+    return createResponse(200, `Order with ${orderId} was delivered successfully by companyId ${deliveryCompanyId}`); 
+  }).catch(error => {
+    return createResponse(400, error);
+  })
+}
+
+module.exports.notifyCustomerService = async (eventType) => {
+  console.log('Call customer service endpoint');
+
+  return 'DONE';
+}
+function getProducerPromise(records) {
+  const ordersPlaced = records.filter(r => r.eventType == 'order_placed');
+
+  if (ordersPlaced.length > 0) {
+    return producerManager.handlePlacedOrders(ordersPlaced);
+  } else {
+    return null;
+  }
+} 
+
+function getDeliveryPromise(records) {
+  const orderFulfilled = records.filter(r => r,eventType == 'order_fulfilled');
+
+  if (orderFulfilled.length > 0) {
+    return deliveryManager.deliveryOrder(orderFulfilled);
+  } else {
+    return null;
+  }
 }

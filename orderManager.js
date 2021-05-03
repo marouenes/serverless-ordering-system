@@ -24,7 +24,7 @@ module.exports.createOrder = body => {
 
 module.exports.placeNewOrder = order => {
     // save order in table (DynamoDB)
-    return saveOrder(order).then(() => {
+    return this.saveOrder(order).then(() => {
         return placeOrderStream(order)
     })
 }
@@ -32,13 +32,20 @@ module.exports.placeNewOrder = order => {
 module.exports.fulfillOrder = (orderId, fulfilmentId) => {
     return getOrder(orderId).then(savedOrder => {
         const order = createFulfilledOrder(savedOrder, fulfilmentId);
-        return savedOrder(order).then(() => {
+        return this.savedOrder(order).then(() => {
             return placeOrderStream(order)
         });
     });
 }
 
-function saveOrder(order) {
+module.exports.updateOrderForDelivery = orderId => {
+    return getOrder(orderId).then(order => {
+        order.sentToDeliveryDate = Date.now();
+        return order;
+    });
+}
+
+module.exports.saveOrder = order => {
     const params = {
         TableName: TABLE_NAME,
         Item: order 
@@ -46,6 +53,14 @@ function saveOrder(order) {
 
     return dynamo.put(param).promise()
 }
+
+module.exports.updateOrderAfterDelivery = (orderId, deliveryCompanyId) => {
+    return getOrder(orderId).then(order => {
+        order.deliveryCompanyId = deliveryCompanyId;
+        order.deliveryDate = Date.now();
+        return order;
+    });
+} 
 
 function placeOrderStream(order) {
     const params = {
