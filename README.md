@@ -4,6 +4,7 @@
 ## Overview
 
 This is a project aiming at using Amazon Web Services products for building Data-Driven Serverless Applications with Kinesis. Data-driven applications have their application flow governed by the data, and the serverless framework can serve as the web framework to create this kind of application.
+
 [![Node.js CI](https://github.com/marouenes/serverless-ordering-system/actions/workflows/node.js.yml/badge.svg?branch=master)](https://github.com/marouenes/serverless-ordering-system/actions/workflows/node.js.yml)
 
 ## Project Walkthough
